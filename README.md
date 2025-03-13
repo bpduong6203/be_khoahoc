@@ -9,6 +9,7 @@ mở file .evn.example đổi tên database mới tạo cho dòng 26
 
  đổi tên file .evn.example  --->  .env
 
+add database                --     php artisan migrate
 chạy project laravel        --     php artisan serve
 liệt kê các đường dẫn api   --     php artiaan route:list
 
