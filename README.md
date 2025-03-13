@@ -1,7 +1,7 @@
 cài extensions   Laravel Artían 
                  Laravel Snippets
 
-có thể không cần chạy        npm install
+chạy lệnh này để cài các thư viện     --  composer install
 
 dùng xampp hoặc laragon tạo 1 database mới 
 mở file .evn.example đổi tên database mới tạo cho dòng 26 
