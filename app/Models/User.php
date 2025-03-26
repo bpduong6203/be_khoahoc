@@ -16,6 +16,7 @@ class User extends Authenticatable
         'avatar',
         'email',
         'password',
+        'role_id',
     ];
 
     protected $hidden = [
@@ -23,11 +24,12 @@ class User extends Authenticatable
         'remember_token',
     ];
 
-    protected function casts(): array
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+        'password' => 'hashed',
+    ];
+    public function role()
     {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-        ];
+        return $this->belongsTo(Role::class);
     }
 }
