@@ -6,9 +6,7 @@ use App\Models\User;
 use App\Models\Role;
 use Illuminate\Http\Request;
 
-use App\Http\Controllers\Controller;
-
-class UserController extends Controller
+class AdminController extends Controller
 {
     public function __construct()
     {
@@ -17,6 +15,7 @@ class UserController extends Controller
 
     public function index()
     {
+        // Lấy danh sách cả student và teacher
         $users = User::whereHas('role', function ($query) {
             $query->whereIn('name', ['student', 'teacher']);
         })->get();
@@ -46,8 +45,9 @@ class UserController extends Controller
                 'role_id' => $request->role_id,
             ]);
 
+            $roleName = Role::find($request->role_id)->name;
             return response()->json([
-                'message' => 'Thêm mới thành công!',
+                'message' => "Thêm {$roleName} thành công!",
                 'user' => $user
             ], 201);
         } catch (\Exception $e) {
@@ -61,7 +61,7 @@ class UserController extends Controller
     public function show(User $user)
     {
         if (!in_array($user->role->name, ['student', 'teacher'])) {
-            return response()->json(['error' => 'Bạn chỉ có thể xem student hoặc teacher'], 403);
+            return response()->json(['error' => 'Đây không phải là student hoặc teacher'], 403);
         }
         return response()->json($user);
     }
@@ -69,16 +69,15 @@ class UserController extends Controller
     public function update(Request $request, User $user)
     {
         if (!in_array($user->role->name, ['student', 'teacher'])) {
-            return response()->json(['error' => 'Bạn chỉ có thể chỉnh sửa student hoặc teacher'], 403);
+            return response()->json(['error' => 'Đây không phải là student hoặc teacher'], 403);
         }
 
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email,' . $user->id,
-            'role_id' => 'required|exists:roles,id|in:' . implode(',', Role::whereIn('name', ['student', 'teacher'])->pluck('id')->toArray()),
         ]);
 
-        $user->update($request->only('name', 'email', 'role_id'));
+        $user->update($request->only('name', 'email'));
 
         if ($request->filled('password')) {
             $user->update(['password' => bcrypt($request->password)]);
@@ -93,7 +92,7 @@ class UserController extends Controller
     public function destroy(User $user)
     {
         if (!in_array($user->role->name, ['student', 'teacher'])) {
-            return response()->json(['error' => 'Bạn chỉ có thể xóa student hoặc teacher'], 403);
+            return response()->json(['error' => 'Đây không phải là student hoặc teacher'], 403);
         }
 
         $user->delete();
