@@ -47,6 +47,7 @@ Route::prefix('students')->middleware(['auth:sanctum', 'role:admin'])->group(fun
 });
 
 //routes teachers
+//path for testing: http://localhost:8000/api/teachers
 Route::prefix('teachers')->middleware(['auth:sanctum', 'role:admin'])->group(function () {
     Route::get('/', [TeacherController::class, 'index']);         // Lấy danh sách teachers
     Route::post('/', [TeacherController::class, 'store']);        // Tạo mới teacher
@@ -54,7 +55,7 @@ Route::prefix('teachers')->middleware(['auth:sanctum', 'role:admin'])->group(fun
     Route::put('/{user}', [TeacherController::class, 'update']);  // Cập nhật teacher
     Route::delete('/{user}', [TeacherController::class, 'destroy']); // Xóa teacher
 });
-
+//path for testing: http://localhost:8000/api/admins
 Route::prefix('admins')->middleware(['auth:sanctum', 'role:admin'])->group(function () {
     Route::get('/', [AdminController::class, 'index']);         // Lấy danh sách admins
     Route::post('/', [AdminController::class, 'store']);        // Tạo mới admin
