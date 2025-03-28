@@ -25,7 +25,8 @@ class AuthController extends Controller
 
         $token = $user->createToken('authToken')->plainTextToken;
 
-        return response()->json(['message' => 'User registered and logged in successfully', 'token' => $token]);
+        return response()->json(['message' => 'User registered and logged in successfully', 
+        'token' => $token, 'user' => $user]);
     }
 
     public function login(Request $request)
@@ -71,6 +72,23 @@ class AuthController extends Controller
             logger()->error('Error during logout', ['error' => $e->getMessage()]);
             return response()->json(['message' => 'Internal Server Error'], 500);
         }
+    }
+
+    public function getUser(Request $request)
+    {
+        $user = $request->user(); // Lấy user đã authenticate qua Sanctum
+
+        if (!$user) {
+            return response()->json(['error' => 'Không tìm thấy người dùng'], 401);
+        }
+
+        return response()->json([
+            'id' => $user->id,
+            'name' => $user->name,
+            'email' => $user->email,
+            'created_at' => $user->created_at,
+            'updated_at' => $user->updated_at,
+        ]);
     }
 
 }

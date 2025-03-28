@@ -31,7 +31,6 @@ class GoogleController extends Controller
 
             $socialUser = Socialite::driver($provider)->stateless()->user();
 
-            // Tìm hoặc tạo tài khoản xã hội
             $socialAccount = SocialAccount::where('provider_name', $provider)
                 ->where('provider_id', $socialUser->getId())
                 ->first();
@@ -56,9 +55,11 @@ class GoogleController extends Controller
                 ]);
             }
 
-            $token = $user->createToken('auth_token')->plainTextToken;
+            auth()->login($user);
+            $user->tokens()->delete();
 
-            // Redirect về frontend với token
+            $token = $user->createToken('authToken')->plainTextToken;
+
             $redirectUrl = env('FRONTEND_URL') . '/callback?token=' . $token;
             return redirect($redirectUrl);
         } catch (\Exception $e) {

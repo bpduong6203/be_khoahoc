@@ -25,4 +25,7 @@ Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanc
 Route::post('/send-email', [MailController::class, 'sendMail']);
 
 Route::get('/auth/{provider}', [GoogleController::class, 'redirectToProvider']);
+
 Route::get('/auth/{provider}/callback', [GoogleController::class, 'handleProviderCallback']);
+
+Route::middleware('auth:sanctum')->get('/user', [AuthController::class, 'getUser']);
