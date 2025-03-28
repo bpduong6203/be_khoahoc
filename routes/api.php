@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\MailController;
+use App\Http\Controllers\GoogleController;
 
 
 // Route trả về thông tin người dùng đang đăng nhập
@@ -23,3 +24,5 @@ Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanc
 
 Route::post('/send-email', [MailController::class, 'sendMail']);
 
+Route::get('/auth/{provider}', [GoogleController::class, 'redirectToProvider']);
+Route::get('/auth/{provider}/callback', [GoogleController::class, 'handleProviderCallback']);
