@@ -18,15 +18,28 @@ class AuthController extends Controller
         ]);
 
         $user = User::create([
+            'id' => \Illuminate\Support\Str::uuid(), // Nếu dùng UUID
             'name' => $validatedData['name'],
             'email' => $validatedData['email'],
             'password' => Hash::make($validatedData['password']),
         ]);
 
+        $user->load('roles');
+
         $token = $user->createToken('authToken')->plainTextToken;
 
-        return response()->json(['message' => 'User registered and logged in successfully', 
-        'token' => $token, 'user' => $user]);
+        return response()->json([
+            'message' => 'User registered and logged in successfully',
+            'token' => $token,
+            'user' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'created_at' => $user->created_at,
+                'updated_at' => $user->updated_at,
+                'roles' => $user->roles->pluck('name'),
+            ],
+        ]);
     }
 
     public function login(Request $request)
@@ -46,10 +59,23 @@ class AuthController extends Controller
 
         $user = Auth::user();
         $user->tokens()->delete();
+        
+        $user->load('roles');
+
         $token = $user->createToken('authToken')->plainTextToken;
 
-        return response()->json(['message' => 'User logged in successfully', 
-        'token' => $token, 'user' => $user]);
+        return response()->json([
+            'message' => 'User logged in successfully',
+            'token' => $token,
+            'user' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'created_at' => $user->created_at,
+                'updated_at' => $user->updated_at,
+                'roles' => $user->roles->pluck('name'),
+            ],
+        ]);
     }
 
     public function logout(Request $request)
@@ -62,9 +88,7 @@ class AuthController extends Controller
             }
 
             logger()->info('User found', ['user' => $user]);
-
             $user->tokens()->delete();
-
             logger()->info('Tokens deleted for user', ['user' => $user]);
 
             return response()->json(['message' => 'User logged out successfully']);
@@ -74,14 +98,15 @@ class AuthController extends Controller
         }
     }
 
-    // get thông tin user
     public function getUser(Request $request)
     {
-        $user = $request->user(); // Lấy user đã authenticate qua Sanctum
+        $user = $request->user();
 
         if (!$user) {
             return response()->json(['error' => 'Không tìm thấy người dùng'], 401);
         }
+
+        $user->load('roles'); // Đảm bảo roles luôn được tải
 
         return response()->json([
             'id' => $user->id,
@@ -89,7 +114,7 @@ class AuthController extends Controller
             'email' => $user->email,
             'created_at' => $user->created_at,
             'updated_at' => $user->updated_at,
+            'roles' => $user->roles->pluck('name'),
         ]);
     }
-
 }
