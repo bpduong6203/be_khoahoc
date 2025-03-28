@@ -5,6 +5,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\MailController;
 use App\Http\Controllers\GoogleController;
+use App\Http\Controllers\FacebookController;
+
 
 
 // Route trả về thông tin người dùng đang đăng nhập
@@ -29,3 +31,6 @@ Route::get('/auth/{provider}', [GoogleController::class, 'redirectToProvider']);
 Route::get('/auth/{provider}/callback', [GoogleController::class, 'handleProviderCallback']);
 
 Route::middleware('auth:sanctum')->get('/user', [AuthController::class, 'getUser']);
+
+Route::get('/auth/facebook', [FacebookController::class, 'redirectToProvider']);
+Route::get('/auth/facebook/callback', [FacebookController::class, 'handleProviderCallback']);

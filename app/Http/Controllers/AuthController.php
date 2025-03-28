@@ -74,6 +74,7 @@ class AuthController extends Controller
         }
     }
 
+    // get thông tin user
     public function getUser(Request $request)
     {
         $user = $request->user(); // Lấy user đã authenticate qua Sanctum
