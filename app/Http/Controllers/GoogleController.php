@@ -7,9 +7,18 @@ use Laravel\Socialite\Facades\Socialite;
 use App\Models\User;
 use App\Models\SocialAccount;
 use Illuminate\Http\Request;
+use App\Services\AuthService;
+use Illuminate\Support\Facades\Auth;
 
 class GoogleController extends Controller
 {
+    protected $authService;
+
+    public function __construct(AuthService $authService)
+    {
+        $this->authService = $authService;
+    }
+
     public function redirectToProvider($provider)
     {
         $allowedProviders = ['google', 'facebook', 'github'];
@@ -54,11 +63,8 @@ class GoogleController extends Controller
                     'provider_id' => $socialUser->getId(),
                 ]);
             }
-
-            auth()->login($user);
-            $user->tokens()->delete();
-
-            $token = $user->createToken('authToken')->plainTextToken;
+            Auth::login($user);
+            $token = $this->authService->generateAuthToken($user); 
 
             $redirectUrl = env('FRONTEND_URL') . '/callback?token=' . $token;
             return redirect($redirectUrl);

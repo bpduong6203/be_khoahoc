@@ -7,9 +7,19 @@ use Laravel\Socialite\Facades\Socialite;
 use App\Models\User;
 use App\Models\SocialAccount;
 use Illuminate\Http\Request;
+use App\Services\AuthService;
+use Illuminate\Support\Facades\Auth;
+
 
 class FacebookController extends Controller
 {
+    protected $authService;
+
+    public function __construct(AuthService $authService)
+    {
+        $this->authService = $authService;
+    }
+
     public function redirectToProvider()
     {
         $url = Socialite::driver('facebook')->stateless()->redirect()->getTargetUrl();
@@ -45,10 +55,9 @@ class FacebookController extends Controller
                 ]);
             }
 
-            auth()->login($user);
-            $user->tokens()->delete();
+            Auth::login($user);
 
-            $token = $user->createToken('authToken')->plainTextToken;
+            $token = $this->authService->generateAuthToken($user); 
 
             $redirectUrl = env('FRONTEND_URL') . '/callback?token=' . $token;
             return redirect($redirectUrl);

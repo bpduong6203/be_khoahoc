@@ -6,9 +6,18 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
+use App\Services\AuthService;
+use App\DTO\UserDTO;
 
 class AuthController extends Controller
 {
+    protected $authService;
+
+    public function __construct(AuthService $authService)
+    {
+        $this->authService = $authService;
+    }
+
     public function register(Request $request)
     {
         $validatedData = $request->validate([
@@ -18,27 +27,19 @@ class AuthController extends Controller
         ]);
 
         $user = User::create([
-            'id' => \Illuminate\Support\Str::uuid(), // Nếu dùng UUID
+            'id' => \Illuminate\Support\Str::uuid(),
             'name' => $validatedData['name'],
             'email' => $validatedData['email'],
             'password' => Hash::make($validatedData['password']),
         ]);
 
-        $user->load('roles');
-
-        $token = $user->createToken('authToken')->plainTextToken;
+        $token = $this->authService->generateAuthToken($user);
+        $userDTO = UserDTO::fromUser($user, ['id', 'name', 'email', 'roles']);
 
         return response()->json([
             'message' => 'User registered and logged in successfully',
             'token' => $token,
-            'user' => [
-                'id' => $user->id,
-                'name' => $user->name,
-                'email' => $user->email,
-                'created_at' => $user->created_at,
-                'updated_at' => $user->updated_at,
-                'roles' => $user->roles->pluck('name'),
-            ],
+            'user' => $userDTO->toArray(),
         ]);
     }
 
@@ -58,23 +59,13 @@ class AuthController extends Controller
         }
 
         $user = Auth::user();
-        $user->tokens()->delete();
-        
-        $user->load('roles');
-
-        $token = $user->createToken('authToken')->plainTextToken;
+        $token = $this->authService->generateAuthToken($user);
+        $userDTO = UserDTO::fromUser($user, ['id', 'name', 'email', 'roles']);
 
         return response()->json([
             'message' => 'User logged in successfully',
             'token' => $token,
-            'user' => [
-                'id' => $user->id,
-                'name' => $user->name,
-                'email' => $user->email,
-                'created_at' => $user->created_at,
-                'updated_at' => $user->updated_at,
-                'roles' => $user->roles->pluck('name'),
-            ],
+            'user' => $userDTO->toArray(),
         ]);
     }
 
@@ -106,15 +97,8 @@ class AuthController extends Controller
             return response()->json(['error' => 'Không tìm thấy người dùng'], 401);
         }
 
-        $user->load('roles'); // Đảm bảo roles luôn được tải
+        $userDTO = UserDTO::fromUser($user, ['id', 'name', 'email', 'roles']);
 
-        return response()->json([
-            'id' => $user->id,
-            'name' => $user->name,
-            'email' => $user->email,
-            'created_at' => $user->created_at,
-            'updated_at' => $user->updated_at,
-            'roles' => $user->roles->pluck('name'),
-        ]);
+        return response()->json($userDTO->toArray());
     }
 }
