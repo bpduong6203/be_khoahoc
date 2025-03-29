@@ -2,23 +2,29 @@
 
 namespace App\Models;
 
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
-use Illuminate\Support\Str;
 
 class User extends Authenticatable
 {
-    use HasApiTokens, Notifiable, HasFactory;
-    protected $keyType = 'string';
-    public $incrementing = false;
+    use HasApiTokens, HasFactory, Notifiable;
 
     protected $fillable = [
-        'name',
-        'avatar',
+        'username',
         'email',
+        'phone_number',
         'password',
+        'full_name',
+        'avatar',
+        'is_email_verified',
+        'is_2fa_enabled',
+        'social_login_type',
+        'social_login_id',
+        'status',
+        'last_login',
     ];
 
     protected $hidden = [
@@ -29,34 +35,75 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
+        'is_email_verified' => 'boolean',
+        'is_2fa_enabled' => 'boolean',
+        'last_login' => 'datetime',
     ];
 
     public function roles()
     {
-        return $this->belongsToMany(Role::class, 'role_user', 'user_id', 'role_id');
+        return $this->belongsToMany(Role::class, 'user_roles')
+            ->withPivot('status', 'assigned_by')
+            ->withTimestamps();
     }
 
-
-    public function socialAccounts()
+    public function courses()
     {
-        return $this->hasMany(SocialAccount::class);
+        return $this->hasMany(Course::class, 'teacher_id');
     }
 
-    protected static function boot()
+    public function enrollments()
     {
-        parent::boot();
+        return $this->hasMany(Enrollment::class);
+    }
 
-        static::creating(function ($model) {
-            $model->id = (string) Str::uuid();
-        });
+    public function payments()
+    {
+        return $this->hasMany(Payment::class);
+    }
 
-        static::created(function ($user) {
-            if ($user->exists && !$user->roles()->exists()) {
-                $role = Role::where('name', 'user')->first();
-                if ($role) {
-                    $user->roles()->attach($role->id);
-                }
-            }
-        });
+    public function conversations()
+    {
+        return $this->belongsToMany(Conversation::class, 'conversation_members')
+            ->withPivot('member_role', 'status')
+            ->withTimestamps();
+    }
+
+    public function messages()
+    {
+        return $this->hasMany(Message::class, 'sender_id');
+    }
+
+    public function courseRecommendations()
+    {
+        return $this->hasMany(AICourseRecommendation::class);
+    }
+
+    public function notifications()
+    {
+        return $this->hasMany(Notification::class);
+    }
+
+    public function activityLogs()
+    {
+        return $this->hasMany(ActivityLog::class);
+    }
+
+    public function hasRole($roleName)
+    {
+        return $this->roles()->where('name', $roleName)
+            ->where('user_roles.status', 'Active')
+            ->exists();
+    }
+
+    public function hasPermission($permissionName)
+    {
+        return $this->roles()
+            ->whereHas('permissions', function ($query) use ($permissionName) {
+                $query->where('name', $permissionName)
+                    ->where('role_permissions.status', 'Active');
+            })
+            ->where('user_roles.status', 'Active')
+            ->exists();
     }
 }

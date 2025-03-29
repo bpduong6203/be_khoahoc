@@ -5,26 +5,21 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-class Role extends Model
+
+class Permission extends Model
 {
     use HasFactory;
 
     protected $fillable = [
         'name',
         'description',
+        'category',
         'status',
     ];
 
-    public function users()
+    public function roles()
     {
-        return $this->belongsToMany(User::class, 'user_roles')
-            ->withPivot('status', 'assigned_by')
-            ->withTimestamps();
-    }
-
-    public function permissions()
-    {
-        return $this->belongsToMany(Permission::class, 'role_permissions')
+        return $this->belongsToMany(Role::class, 'role_permissions')
             ->withPivot('status', 'assigned_by')
             ->withTimestamps();
     }
