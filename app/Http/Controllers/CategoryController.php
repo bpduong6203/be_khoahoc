@@ -2,42 +2,31 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Category;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
-use App\DTO\CategoryDTO;
+use App\Services\CategoryService;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 
 class CategoryController extends Controller
 {
-    /**
-     * Display a listing of the categories.
-     */
+    protected $categoryService;
+
+    public function __construct(CategoryService $categoryService)
+    {
+        $this->categoryService = $categoryService;
+    }
+
     public function index(Request $request)
     {
-        $query = Category::query();
-        
-        // Filter by status if provided
-        if ($request->has('status')) {
-            $query->where('status', $request->status);
-        }
-        
-        // Filter by parent_id if provided
-        if ($request->has('parent_id')) {
-            $query->where('parent_id', $request->parent_id);
-        }
-        
-        $categories = $query->get();
-        
+        $filters = $request->only(['status', 'parent_id']);
+        $categories = $this->categoryService->getCategories($filters);
+
         return response()->json([
             'data' => $categories,
-            'message' => 'Categories retrieved successfully'
+            'message' => 'Categories retrieved successfully',
         ]);
     }
 
-    /**
-     * Store a newly created category.
-     */
     public function store(Request $request)
     {
         $validatedData = $request->validate([
@@ -47,41 +36,29 @@ class CategoryController extends Controller
             'status' => 'nullable|in:Active,Inactive',
         ]);
 
-        $category = Category::create([
-            'id' => Str::uuid(),
-            'name' => $validatedData['name'],
-            'description' => $validatedData['description'] ?? null,
-            'parent_id' => $validatedData['parent_id'] ?? null,
-            'created_by' => $request->user()->id,
-            'status' => $validatedData['status'] ?? 'Active',
-        ]);
+        $category = $this->categoryService->createCategory($validatedData, $request->user()->id);
 
         return response()->json([
             'data' => $category,
-            'message' => 'Category created successfully'
+            'message' => 'Category created successfully',
         ], 201);
     }
 
-    /**
-     * Display the specified category.
-     */
     public function show($id)
     {
-        $category = Category::findOrFail($id);
-        
-        return response()->json([
-            'data' => $category,
-            'message' => 'Category retrieved successfully'
-        ]);
+        try {
+            $category = $this->categoryService->getCategoryById($id);
+            return response()->json([
+                'data' => $category,
+                'message' => 'Category retrieved successfully',
+            ]);
+        } catch (ModelNotFoundException $e) {
+            return response()->json(['message' => 'Category not found'], 404);
+        }
     }
 
-    /**
-     * Update the specified category.
-     */
     public function update(Request $request, $id)
     {
-        $category = Category::findOrFail($id);
-        
         $validatedData = $request->validate([
             'name' => 'sometimes|required|string|max:255',
             'description' => 'nullable|string',
@@ -89,24 +66,24 @@ class CategoryController extends Controller
             'status' => 'nullable|in:Active,Inactive',
         ]);
 
-        $category->update($validatedData);
-
-        return response()->json([
-            'data' => $category,
-            'message' => 'Category updated successfully'
-        ]);
+        try {
+            $category = $this->categoryService->updateCategory($id, $validatedData);
+            return response()->json([
+                'data' => $category,
+                'message' => 'Category updated successfully',
+            ]);
+        } catch (ModelNotFoundException $e) {
+            return response()->json(['message' => 'Category not found'], 404);
+        }
     }
 
-    /**
-     * Remove the specified category.
-     */
     public function destroy($id)
     {
-        $category = Category::findOrFail($id);
-        $category->delete();
-
-        return response()->json([
-            'message' => 'Category deleted successfully'
-        ]);
+        try {
+            $this->categoryService->deleteCategory($id);
+            return response()->json(['message' => 'Category deleted successfully']);
+        } catch (ModelNotFoundException $e) {
+            return response()->json(['message' => 'Category not found'], 404);
+        }
     }
 }

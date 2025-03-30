@@ -2,73 +2,32 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Course;
-use App\Models\Enrollment;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
-use Illuminate\Support\Facades\Storage;
-use App\DTO\CourseDTO;
+use App\Services\CourseService;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Exception;
 
 class CourseController extends Controller
 {
-    /**
-     * Display a listing of the courses.
-     */
+    protected $courseService;
+
+    public function __construct(CourseService $courseService)
+    {
+        $this->courseService = $courseService;
+    }
+
     public function index(Request $request)
     {
-        $query = Course::query();
-        
-        // Filter by category
-        if ($request->has('category_id')) {
-            $query->where('category_id', $request->category_id);
-        }
-        
-        // Filter by status
-        if ($request->has('status')) {
-            $query->where('status', $request->status);
-        }
-        
-        // Filter by level
-        if ($request->has('level')) {
-            $query->where('level', $request->level);
-        }
-        
-        // Filter by price range
-        if ($request->has('min_price')) {
-            $query->where('price', '>=', $request->min_price);
-        }
-        
-        if ($request->has('max_price')) {
-            $query->where('price', '<=', $request->max_price);
-        }
-        
-        // Search by title or description
-        if ($request->has('search')) {
-            $search = $request->search;
-            $query->where(function($q) use ($search) {
-                $q->where('title', 'like', "%{$search}%")
-                  ->orWhere('description', 'like', "%{$search}%");
-            });
-        }
-        
-        // Sorting
-        $sortField = $request->get('sort_by', 'created_at');
-        $sortDirection = $request->get('sort_direction', 'desc');
-        $query->orderBy($sortField, $sortDirection);
-        
-        // Pagination
+        $filters = $request->only(['category_id', 'status', 'level', 'min_price', 'max_price', 'search', 'sort_by', 'sort_direction']);
         $perPage = $request->get('per_page', 10);
-        $courses = $query->paginate($perPage);
-        
+        $courses = $this->courseService->getCourses($filters, $perPage);
+
         return response()->json([
             'data' => $courses,
-            'message' => 'Courses retrieved successfully'
+            'message' => 'Courses retrieved successfully',
         ]);
     }
 
-    /**
-     * Store a newly created course.
-     */
     public function store(Request $request)
     {
         $validatedData = $request->validate([
@@ -84,62 +43,30 @@ class CourseController extends Controller
             'objectives' => 'nullable|string',
             'status' => 'nullable|in:Draft,Published,Archived',
         ]);
-        
-        // Handle file upload if thumbnail is provided
-        $thumbnailUrl = null;
-        if ($request->hasFile('thumbnail')) {
-            $thumbnailUrl = $request->file('thumbnail')->store('thumbnails', 'public');
-        }
-        
-        $course = Course::create([
-            'id' => Str::uuid(),
-            'title' => $validatedData['title'],
-            'description' => $validatedData['description'] ?? null,
-            'category_id' => $validatedData['category_id'] ?? null,
-            'user_id' => $request->user()->id,
-            'price' => $validatedData['price'],
-            'discount_price' => $validatedData['discount_price'] ?? null,
-            'thumbnail_url' => $thumbnailUrl,
-            'duration' => $validatedData['duration'] ?? null,
-            'level' => $validatedData['level'] ?? 'All Levels',
-            'requirements' => $validatedData['requirements'] ?? null,
-            'objectives' => $validatedData['objectives'] ?? null,
-            'status' => $validatedData['status'] ?? 'Draft',
-        ]);
-        
+
+        $course = $this->courseService->createCourse($validatedData, $request->user()->id);
+
         return response()->json([
             'data' => $course,
-            'message' => 'Course created successfully'
+            'message' => 'Course created successfully',
         ], 201);
     }
 
-    /**
-     * Display the specified course.
-     */
     public function show($id)
     {
-        $course = Course::with(['category', 'user', 'lessons'])->findOrFail($id);
-        
-        return response()->json([
-            'data' => $course,
-            'message' => 'Course retrieved successfully'
-        ]);
+        try {
+            $course = $this->courseService->getCourseById($id);
+            return response()->json([
+                'data' => $course,
+                'message' => 'Course retrieved successfully',
+            ]);
+        } catch (ModelNotFoundException $e) {
+            return response()->json(['message' => 'Course not found'], 404);
+        }
     }
 
-    /**
-     * Update the specified course.
-     */
     public function update(Request $request, $id)
     {
-        $course = Course::findOrFail($id);
-        
-        // Check if the user is the owner of the course
-        if ($request->user()->id !== $course->user_id && !$request->user()->hasRole('admin')) {
-            return response()->json([
-                'message' => 'You are not authorized to update this course'
-            ], 403);
-        }
-        
         $validatedData = $request->validate([
             'title' => 'sometimes|required|string|max:255',
             'description' => 'nullable|string',
@@ -153,121 +80,56 @@ class CourseController extends Controller
             'objectives' => 'nullable|string',
             'status' => 'nullable|in:Draft,Published,Archived',
         ]);
-        
-        // Handle file upload if thumbnail is provided
-        if ($request->hasFile('thumbnail')) {
-            // Delete old thumbnail if exists
-            if ($course->thumbnail_url) {
-                Storage::disk('public')->delete($course->thumbnail_url);
-            }
-            
-            $validatedData['thumbnail_url'] = $request->file('thumbnail')->store('thumbnails', 'public');
+
+        try {
+            $course = $this->courseService->updateCourse($id, $validatedData);
+            return response()->json([
+                'data' => $course,
+                'message' => 'Course updated successfully',
+            ]);
+        } catch (ModelNotFoundException $e) {
+            return response()->json(['message' => 'Course not found'], 404);
         }
-        
-        $course->update($validatedData);
-        
+    }
+
+    public function destroy($id)
+    {
+        try {
+            $this->courseService->deleteCourse($id);
+            return response()->json(['message' => 'Course deleted successfully']);
+        } catch (ModelNotFoundException $e) {
+            return response()->json(['message' => 'Course not found'], 404);
+        }
+    }
+
+    public function enroll(Request $request, $courseId)
+    {
+        try {
+            $enrollment = $this->courseService->enrollUser($courseId, $request->user()->id);
+            return response()->json([
+                'data' => $enrollment,
+                'message' => 'Successfully enrolled in course',
+            ], 201);
+        } catch (Exception $e) {
+            return response()->json(['message' => $e->getMessage()], $e->getCode() ?: 400);
+        }
+    }
+
+    public function myEnrolledCourses(Request $request)
+    {
+        $enrollments = $this->courseService->getEnrolledCourses($request->user()->id);
         return response()->json([
-            'data' => $course,
-            'message' => 'Course updated successfully'
+            'data' => $enrollments,
+            'message' => 'Enrolled courses retrieved successfully',
         ]);
     }
 
-    /**
-     * Remove the specified course.
-     */
-    public function destroy(Request $request, $id)
-    {
-        $course = Course::findOrFail($id);
-        
-        // Check if the user is the owner of the course
-        if ($request->user()->id !== $course->user_id && !$request->user()->hasRole('admin')) {
-            return response()->json([
-                'message' => 'You are not authorized to delete this course'
-            ], 403);
-        }
-        
-        // Delete thumbnail if exists
-        if ($course->thumbnail_url) {
-            Storage::disk('public')->delete($course->thumbnail_url);
-        }
-        
-        $course->delete();
-        
-        return response()->json([
-            'message' => 'Course deleted successfully'
-        ]);
-    }
-    
-    /**
-     * Enroll a user in a course.
-     */
-    public function enroll(Request $request, $courseId)
-    {
-        $course = Course::findOrFail($courseId);
-        $userId = $request->user()->id;
-        
-        // Check if already enrolled
-        $existingEnrollment = Enrollment::where('user_id', $userId)
-            ->where('course_id', $courseId)
-            ->first();
-            
-        if ($existingEnrollment) {
-            return response()->json([
-                'message' => 'You are already enrolled in this course'
-            ], 400);
-        }
-        
-        // Create enrollment
-        $enrollment = Enrollment::create([
-            'id' => Str::uuid(),
-            'user_id' => $userId,
-            'course_id' => $courseId,
-            'price' => $course->discount_price ?? $course->price,
-            'payment_status' => 'Pending',
-            'status' => 'Active',
-        ]);
-        
-        // Increment enrollment count
-        $course->increment('enrollment_count');
-        
-        return response()->json([
-            'data' => $enrollment,
-            'message' => 'Successfully enrolled in course'
-        ], 201);
-    }
-    
-    /**
-     * Get enrolled courses for the authenticated user.
-     */
-    public function myEnrolledCourses(Request $request)
-    {
-        $userId = $request->user()->id;
-        
-        $enrollments = Enrollment::with('course')
-            ->where('user_id', $userId)
-            ->where('status', 'Active')
-            ->get();
-            
-        return response()->json([
-            'data' => $enrollments,
-            'message' => 'Enrolled courses retrieved successfully'
-        ]);
-    }
-    
-    /**
-     * Get courses created by the authenticated user.
-     */
     public function myCourses(Request $request)
     {
-        $userId = $request->user()->id;
-        
-        $courses = Course::where('user_id', $userId)
-            ->orderBy('created_at', 'desc')
-            ->get();
-            
+        $courses = $this->courseService->getUserCourses($request->user()->id);
         return response()->json([
             'data' => $courses,
-            'message' => 'Your courses retrieved successfully'
+            'message' => 'Your courses retrieved successfully',
         ]);
     }
 }
