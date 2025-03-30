@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('payments', function (Blueprint $table) {
             $table->uuid('id')->primary();
+            $table->string('invoice_code', 50)->unique()->nullable();
             $table->uuid('enrollment_id')->nullable(); 
             $table->foreign('enrollment_id')->references('id')->on('enrollments')->onDelete('set null');
             $table->uuid('user_id');

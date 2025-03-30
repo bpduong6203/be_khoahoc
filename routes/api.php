@@ -1,12 +1,10 @@
 <?php
 
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\MailController;
 use App\Http\Controllers\GoogleController;
-use App\Http\Controllers\FacebookController;
-use App\Providers\AuthServiceProvider;
+use App\Http\Controllers\PaymentController;
 
 
 Route::post('/register', [AuthController::class, 'register']);
@@ -23,6 +21,9 @@ Route::get('/auth/{provider}/callback', [GoogleController::class, 'handleProvide
 
 // lấy thông tin người dùng
 Route::middleware('auth:sanctum')->get('/user', [AuthController::class, 'getUser']);
+
+//Thanh toán QR đang thử nghiệm
+Route::get('/generate-qr', [PaymentController::class, 'generateQRCode']);
 
 
 
