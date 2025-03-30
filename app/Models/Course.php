@@ -9,10 +9,15 @@ class Course extends Model
 {
     use HasFactory;
 
+    protected $keyType = 'string';
+    public $incrementing = false;
+
     protected $fillable = [
+        'id',
         'title',
         'description',
         'category_id',
+        'user_id',
         'teacher_id',
         'price',
         'discount_price',

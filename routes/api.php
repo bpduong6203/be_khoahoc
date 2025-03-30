@@ -5,6 +5,8 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\MailController;
 use App\Http\Controllers\GoogleController;
 use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\CourseController;
 
 
 Route::post('/register', [AuthController::class, 'register']);
@@ -24,6 +26,12 @@ Route::middleware('auth:sanctum')->get('/user', [AuthController::class, 'getUser
 
 //Thanh toán QR đang thử nghiệm
 Route::get('/generate-qr', [PaymentController::class, 'generateQRCode']);
+
+// API cho Categories
+Route::middleware('auth:sanctum')->resource('categories', CategoryController::class);
+
+// API cho Courses
+Route::middleware('auth:sanctum')->resource('courses', CourseController::class);
 
 
 
