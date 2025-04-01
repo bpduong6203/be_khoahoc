@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Gate;
 use App\Models\User;
 use App\Models\Course;
 
-class AuthServiceProvider extends ServiceProvider
+class AppServiceProvider extends ServiceProvider
 {
     protected $policies = [];
 
