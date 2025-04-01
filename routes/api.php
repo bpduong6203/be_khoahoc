@@ -9,7 +9,6 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CourseController;
 use App\Http\Controllers\ReviewController;
 
-
 // =============    LƯU Ý KHI TẠO API!!!!! ==========================
 // Mình sẽ kiểm soát quyền truy cập ở đay thay vì controller nhé 
 // thêm kiểm tra quyền truy cập bằng middleware với 
@@ -34,10 +33,6 @@ use App\Http\Controllers\ReviewController;
 // ------------------------------------------------------------------
 // đơn lẻ 
 // Route::get('/courses', [CourseController::class, 'index'])->middleware('can:teacher-or-admin');
-// ------------------------------------------------------------------
-
-
-
 // ------------------------------------------------------------------
 
 Route::post('/register', [AuthController::class, 'register']);
@@ -83,6 +78,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/my-courses', [CourseController::class, 'myCourses'])->middleware('can:teacher-or-admin');
     Route::get('/my-enrolled-courses', [CourseController::class, 'myEnrolledCourses'])->middleware('can:student-access');
 });
+
 // ------------------------------------------------------------------
 // API cho Reviews
 Route::middleware('auth:sanctum')->group(function () {

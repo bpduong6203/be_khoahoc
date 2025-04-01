@@ -15,7 +15,6 @@ class AuthService
      */
     public function generateAuthToken(User $user, $tokenName = 'authToken')
     {
-        $user->tokens()->delete(); 
         $token = $user->createToken($tokenName)->plainTextToken; 
         return $token; 
     }
