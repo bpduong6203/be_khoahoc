@@ -3,31 +3,21 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
-use App\Models\Role;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
+use App\Services\AuthService;
+use App\DTO\UserDTO;
 
 class AuthController extends Controller
 {
-    // public function register(Request $request)
-    // {
-    //     $validatedData = $request->validate([
-    //         'name' => 'required|string|max:255',
-    //         'email' => 'required|string|email|max:255|unique:users',
-    //         'password' => 'required|string|min:8',
-    //     ]);
+    protected $authService;
 
-    //     $user = User::create([
-    //         'name' => $validatedData['name'],
-    //         'email' => $validatedData['email'],
-    //         'password' => Hash::make($validatedData['password']),
-    //     ]);
+    public function __construct(AuthService $authService)
+    {
+        $this->authService = $authService;
+    }
 
-    //     $token = $user->createToken('authToken')->plainTextToken;
-
-    //     return response()->json(['message' => 'User registered and logged in successfully', 'token' => $token]);
-    // }
     public function register(Request $request)
     {
         $validatedData = $request->validate([
@@ -36,27 +26,20 @@ class AuthController extends Controller
             'password' => 'required|string|min:8',
         ]);
 
-        // Tìm role 'student'
-        $studentRole = Role::where('name', 'student')->first();
-
-        // Nếu không tìm thấy role student, báo lỗi
-        if (!$studentRole) {
-            return response()->json(['message' => 'Student role not found'], 500);
-        }
-
         $user = User::create([
+            'id' => \Illuminate\Support\Str::uuid(),
             'name' => $validatedData['name'],
             'email' => $validatedData['email'],
             'password' => Hash::make($validatedData['password']),
-            'role_id' => $studentRole->id, // Gán role_id mặc định là student
         ]);
 
-        $token = $user->createToken('authToken')->plainTextToken;
+        $token = $this->authService->generateAuthToken($user);
+        $userDTO = UserDTO::fromUser($user, ['id', 'name', 'email', 'roles']);
 
         return response()->json([
             'message' => 'User registered and logged in successfully',
             'token' => $token,
-            'user' => $user
+            'user' => $userDTO->toArray(),
         ]);
     }
 
@@ -76,13 +59,13 @@ class AuthController extends Controller
         }
 
         $user = Auth::user();
-        $user->tokens()->delete();
-        $token = $user->createToken('authToken')->plainTextToken;
+        $token = $this->authService->generateAuthToken($user);
+        $userDTO = UserDTO::fromUser($user, ['id', 'name', 'email', 'roles']);
 
         return response()->json([
             'message' => 'User logged in successfully',
             'token' => $token,
-            'user' => $user
+            'user' => $userDTO->toArray(),
         ]);
     }
 
@@ -96,9 +79,7 @@ class AuthController extends Controller
             }
 
             logger()->info('User found', ['user' => $user]);
-
             $user->tokens()->delete();
-
             logger()->info('Tokens deleted for user', ['user' => $user]);
 
             return response()->json(['message' => 'User logged out successfully']);
@@ -106,5 +87,18 @@ class AuthController extends Controller
             logger()->error('Error during logout', ['error' => $e->getMessage()]);
             return response()->json(['message' => 'Internal Server Error'], 500);
         }
+    }
+
+    public function getUser(Request $request)
+    {
+        $user = $request->user();
+
+        if (!$user) {
+            return response()->json(['error' => 'Không tìm thấy người dùng'], 401);
+        }
+
+        $userDTO = UserDTO::fromUser($user, ['id', 'name', 'email', 'roles']);
+
+        return response()->json($userDTO->toArray());
     }
 }

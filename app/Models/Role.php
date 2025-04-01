@@ -8,16 +8,13 @@ use Illuminate\Database\Eloquent\Model;
 class Role extends Model
 {
     use HasFactory;
+    protected $keyType = 'string';
+    public $incrementing = false;
 
-    protected $fillable = [
-        'name',
-    ];
+    protected $fillable = ['name'];
 
-    /**
-     * Quan hệ: Một vai trò có nhiều người dùng
-     */
     public function users()
     {
-        return $this->hasMany(User::class);
+        return $this->belongsToMany(User::class, 'role_user', 'role_id', 'user_id');
     }
 }
