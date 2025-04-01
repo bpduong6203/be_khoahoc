@@ -6,9 +6,18 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
+use App\Services\AuthService;
+use App\DTO\UserDTO;
 
 class AuthController extends Controller
 {
+    protected $authService;
+
+    public function __construct(AuthService $authService)
+    {
+        $this->authService = $authService;
+    }
+
     public function register(Request $request)
     {
         $validatedData = $request->validate([
@@ -18,15 +27,20 @@ class AuthController extends Controller
         ]);
 
         $user = User::create([
+            'id' => \Illuminate\Support\Str::uuid(),
             'name' => $validatedData['name'],
             'email' => $validatedData['email'],
             'password' => Hash::make($validatedData['password']),
         ]);
 
-        $token = $user->createToken('authToken')->plainTextToken;
+        $token = $this->authService->generateAuthToken($user);
+        $userDTO = UserDTO::fromUser($user, ['id', 'name', 'email', 'roles']);
 
-        return response()->json(['message' => 'User registered and logged in successfully', 
-        'token' => $token, 'user' => $user]);
+        return response()->json([
+            'message' => 'User registered and logged in successfully',
+            'token' => $token,
+            'user' => $userDTO->toArray(),
+        ]);
     }
 
     public function login(Request $request)
@@ -45,11 +59,14 @@ class AuthController extends Controller
         }
 
         $user = Auth::user();
-        $user->tokens()->delete();
-        $token = $user->createToken('authToken')->plainTextToken;
+        $token = $this->authService->generateAuthToken($user);
+        $userDTO = UserDTO::fromUser($user, ['id', 'name', 'email', 'roles']);
 
-        return response()->json(['message' => 'User logged in successfully', 
-        'token' => $token, 'user' => $user]);
+        return response()->json([
+            'message' => 'User logged in successfully',
+            'token' => $token,
+            'user' => $userDTO->toArray(),
+        ]);
     }
 
     public function logout(Request $request)
@@ -62,9 +79,7 @@ class AuthController extends Controller
             }
 
             logger()->info('User found', ['user' => $user]);
-
             $user->tokens()->delete();
-
             logger()->info('Tokens deleted for user', ['user' => $user]);
 
             return response()->json(['message' => 'User logged out successfully']);
@@ -76,19 +91,14 @@ class AuthController extends Controller
 
     public function getUser(Request $request)
     {
-        $user = $request->user(); // Lấy user đã authenticate qua Sanctum
+        $user = $request->user();
 
         if (!$user) {
             return response()->json(['error' => 'Không tìm thấy người dùng'], 401);
         }
 
-        return response()->json([
-            'id' => $user->id,
-            'name' => $user->name,
-            'email' => $user->email,
-            'created_at' => $user->created_at,
-            'updated_at' => $user->updated_at,
-        ]);
-    }
+        $userDTO = UserDTO::fromUser($user, ['id', 'name', 'email', 'roles']);
 
+        return response()->json($userDTO->toArray());
+    }
 }
