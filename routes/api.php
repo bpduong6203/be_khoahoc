@@ -7,6 +7,7 @@ use App\Http\Controllers\GoogleController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CourseController;
+use App\Http\Controllers\PasswordResetController;
 
 // =============    LƯU Ý KHI TẠO API!!!!! ==========================
 // Mình sẽ kiểm soát quyền truy cập ở đay thay vì controller nhé 
@@ -45,6 +46,10 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
 
 // Route::post('/send-email', [MailController::class, 'sendMail']);
+// đổi mật khẩu
+Route::post('/password/send-reset-code', [PasswordResetController::class, 'sendResetCode']);
+Route::post('/password/verify-code', [PasswordResetController::class, 'verifyCode']);
+Route::post('/password/reset', [PasswordResetController::class, 'resetPassword']);
 
 // login mạng xã hội
 Route::get('/auth/{provider}', [GoogleController::class, 'redirectToProvider']);
