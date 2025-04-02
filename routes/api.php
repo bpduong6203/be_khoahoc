@@ -8,6 +8,7 @@ use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CourseController;
 use App\Http\Controllers\PasswordResetController;
+use App\Http\Controllers\ReviewController;
 
 // =============    LƯU Ý KHI TẠO API!!!!! ==========================
 // Mình sẽ kiểm soát quyền truy cập ở đay thay vì controller nhé 
@@ -33,10 +34,6 @@ use App\Http\Controllers\PasswordResetController;
 // ------------------------------------------------------------------
 // đơn lẻ 
 // Route::get('/courses', [CourseController::class, 'index'])->middleware('can:teacher-or-admin');
-// ------------------------------------------------------------------
-
-
-
 // ------------------------------------------------------------------
 
 Route::post('/register', [AuthController::class, 'register']);
@@ -85,4 +82,15 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/courses/{courseId}/enroll', [CourseController::class, 'enroll'])->middleware('can:student-access');
     Route::get('/my-courses', [CourseController::class, 'myCourses'])->middleware('can:teacher-or-admin');
     Route::get('/my-enrolled-courses', [CourseController::class, 'myEnrolledCourses'])->middleware('can:student-access');
+});
+
+// ------------------------------------------------------------------
+// API cho Reviews
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/reviews', [ReviewController::class, 'index']);
+    Route::post('/reviews', [ReviewController::class, 'store'])->middleware('can:student-access');
+    Route::get('/reviews/{id}', [ReviewController::class, 'show']);
+    Route::put('/reviews/{id}', [ReviewController::class, 'update'])->middleware('can:student-access');
+    Route::delete('/reviews/{id}', [ReviewController::class, 'destroy'])->middleware('can:student-access');
+    Route::get('/reviews/course/{courseId}', [ReviewController::class, 'getByCourse']);
 });
