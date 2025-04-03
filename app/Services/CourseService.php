@@ -72,7 +72,7 @@ class CourseService
 
     public function getCourseById($id)
     {
-        $course = Course::with(['category', 'user', 'lessons'])->findOrFail($id);
+        $course = Course::with(['category', 'teacher', 'lessons'])->findOrFail($id);
         return CourseDTO::fromCourse($course);
     }
 
@@ -99,38 +99,6 @@ class CourseService
             Storage::disk('public')->delete($course->thumbnail_url);
         }
         $course->delete();
-    }
-
-    public function enrollUser($courseId, $userId)
-    {
-        $course = Course::findOrFail($courseId);
-        $existingEnrollment = Enrollment::where('user_id', $userId)
-            ->where('course_id', $courseId)
-            ->first();
-
-        if ($existingEnrollment) {
-            throw new \Exception('You are already enrolled in this course', 400);
-        }
-
-        $enrollment = Enrollment::create([
-            'id' => Str::uuid(),
-            'user_id' => $userId,
-            'course_id' => $courseId,
-            'price' => $course->discount_price ?? $course->price,
-            'payment_status' => 'Pending',
-            'status' => 'Active',
-        ]);
-
-        $course->increment('enrollment_count');
-        return $enrollment;
-    }
-
-    public function getEnrolledCourses($userId)
-    {
-        return Enrollment::with('course')
-            ->where('user_id', $userId)
-            ->where('status', 'Active')
-            ->get();
     }
 
     public function getUserCourses($userId)

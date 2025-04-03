@@ -25,7 +25,7 @@ return new class extends Migration
             $table->enum('payment_method', ['Momo', 'Bank', 'Paypal', 'Cash'])->nullable();
             $table->string('transaction_id', 100)->nullable();
             $table->decimal('price', 10, 2);
-            $table->enum('status', ['Active', 'Completed', 'Cancelled'])->default('Active');
+            $table->enum('status', ['Pending','Active', 'Completed', 'Cancelled'])->default('Pending');
             $table->datetime('completion_date')->nullable();
             $table->timestamps();
             $table->unique(['user_id', 'course_id']);

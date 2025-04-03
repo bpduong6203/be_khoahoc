@@ -102,28 +102,6 @@ class CourseController extends Controller
         }
     }
 
-    public function enroll(Request $request, $courseId)
-    {
-        try {
-            $enrollment = $this->courseService->enrollUser($courseId, $request->user()->id);
-            return response()->json([
-                'data' => $enrollment,
-                'message' => 'Successfully enrolled in course',
-            ], 201);
-        } catch (Exception $e) {
-            return response()->json(['message' => $e->getMessage()], $e->getCode() ?: 400);
-        }
-    }
-
-    public function myEnrolledCourses(Request $request)
-    {
-        $enrollments = $this->courseService->getEnrolledCourses($request->user()->id);
-        return response()->json([
-            'data' => $enrollments,
-            'message' => 'Enrolled courses retrieved successfully',
-        ]);
-    }
-
     public function myCourses(Request $request)
     {
         $courses = $this->courseService->getUserCourses($request->user()->id);
