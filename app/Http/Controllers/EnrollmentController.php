@@ -68,6 +68,13 @@ class EnrollmentController extends Controller
     }
 
     /**
+     * 
+     * 
+     * 
+     * 
+     * 
+     * 
+     * 
      * Lấy chi tiết đăng ký
      */
     public function show(Request $request, $id)
