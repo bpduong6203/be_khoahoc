@@ -9,9 +9,13 @@ class Message extends Model
 {
     use HasFactory;
 
+    protected $keyType = 'string';
+    public $incrementing = false;
+
     protected $fillable = [
+        'id',
         'conversation_id',
-        'sender_id',
+        'user_id',
         'content',
         'attachment_url',
         'attachment_type',
@@ -28,7 +32,7 @@ class Message extends Model
         return $this->belongsTo(Conversation::class);
     }
 
-    public function sender()
+    public function user()
     {
         return $this->belongsTo(User::class, 'user_id');
     }

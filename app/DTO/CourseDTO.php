@@ -1,11 +1,9 @@
 <?php
-
 namespace App\DTO;
 
 use App\Models\Course;
 
-class CourseDTO
-{
+class CourseDTO {
     public $id;
     public $title;
     public $description;
@@ -22,6 +20,11 @@ class CourseDTO
     public $rating;
     public $enrollment_count;
     public $created_at;
+    
+    // Add relationship properties
+    public $category;
+    public $user;
+    public $lessons;
 
     public static function fromCourse(Course $course, array $with = [])
     {
@@ -43,12 +46,45 @@ class CourseDTO
         $dto->enrollment_count = $course->enrollment_count;
         $dto->created_at = $course->created_at;
         
+        // Handle relationships
+        if ($course->relationLoaded('category')) {
+            $dto->category = $course->category ? [
+                'id' => $course->category->id,
+                'name' => $course->category->name,
+                // Add other category fields you need
+            ] : null;
+        }
+        
+        if ($course->relationLoaded('user')) {
+            $dto->user = $course->user ? [
+                'id' => $course->user->id,
+                'name' => $course->user->name,
+                // Add other user fields you need
+            ] : null;
+        }
+        
+        if ($course->relationLoaded('lessons')) {
+            $dto->lessons = $course->lessons->map(function($lesson) {
+                return [
+                    'id' => $lesson->id,
+                    'title' => $lesson->title,
+                    'description' => $lesson->description,
+                    'content' => $lesson->content,
+                    'video_url' => $lesson->video_url,
+                    'duration' => $lesson->duration,
+                    'order_number' => $lesson->order_number,
+                    'status' => $lesson->status,
+                    // Add other lesson fields you need
+                ];
+            })->toArray();
+        }
+        
         return $dto;
     }
 
     public function toArray()
     {
-        return [
+        $array = [
             'id' => $this->id,
             'title' => $this->title,
             'description' => $this->description,
@@ -66,5 +102,20 @@ class CourseDTO
             'enrollment_count' => $this->enrollment_count,
             'created_at' => $this->created_at,
         ];
+        
+        // Add relationship data if it exists
+        if (isset($this->category)) {
+            $array['category'] = $this->category;
+        }
+        
+        if (isset($this->user)) {
+            $array['user'] = $this->user;
+        }
+        
+        if (isset($this->lessons)) {
+            $array['lessons'] = $this->lessons;
+        }
+        
+        return $array;
     }
 }
