@@ -19,13 +19,12 @@ class CourseController extends Controller
     public function index(Request $request)
     {
         $filters = $request->only(['category_id', 'status', 'level', 'min_price', 'max_price', 'search', 'sort_by', 'sort_direction']);
-        $perPage = $request->get('per_page', 10);
-        $courses = $this->courseService->getCourses($filters, $perPage);
+        $courses = $this->courseService->getCourses($filters);
 
         return response()->json([
-            'data' => $courses,
+            'data' => $courses->items(),
             'message' => 'Courses retrieved successfully',
-        ]);
+        ]);        
     }
 
     public function store(Request $request)
