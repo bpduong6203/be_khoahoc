@@ -5,29 +5,24 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-class Payment extends Model
+class ConversationMember extends Model
 {
     use HasFactory;
 
+    protected $keyType = 'string';
+    public $incrementing = false;
+
     protected $fillable = [
         'id',
-        'enrollment_id',
+        'conversation_id',
         'user_id',
-        'amount',
-        'payment_method',
-        'transaction_id',
+        'member_role',
         'status',
-        'billing_info',
     ];
 
-    protected $casts = [
-        'amount' => 'decimal:2',
-        'billing_info' => 'json',
-    ];
-
-    public function enrollment()
+    public function conversation()
     {
-        return $this->belongsTo(Enrollment::class);
+        return $this->belongsTo(Conversation::class);
     }
 
     public function user()
