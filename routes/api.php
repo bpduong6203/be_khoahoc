@@ -7,6 +7,8 @@ use App\Http\Controllers\GoogleController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CourseController;
+use App\Http\Controllers\PasswordResetController;
+use App\Http\Controllers\ReviewController;
 
 use App\Http\Controllers\ConversationController;
 use App\Http\Controllers\MessageController;
@@ -46,6 +48,10 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
 
 // Route::post('/send-email', [MailController::class, 'sendMail']);
+// đổi mật khẩu
+Route::post('/password/send-reset-code', [PasswordResetController::class, 'sendResetCode']);
+Route::post('/password/verify-code', [PasswordResetController::class, 'verifyCode']);
+Route::post('/password/reset', [PasswordResetController::class, 'resetPassword']);
 
 // login mạng xã hội
 Route::get('/auth/{provider}', [GoogleController::class, 'redirectToProvider']);
@@ -80,8 +86,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/courses/{courseId}', [CourseController::class, 'update'])->middleware('can:update-course,courseId');
     Route::delete('/courses/{courseId}', [CourseController::class, 'destroy'])->middleware('can:delete-course,courseId');
     Route::get('/my-courses', [CourseController::class, 'myCourses'])->middleware('can:teacher-or-admin');
-    
-    // Enrollment routes
     Route::get('/enrollments', [EnrollmentController::class, 'index']);
     Route::post('/courses/{courseId}/enroll', [EnrollmentController::class, 'store']);
     Route::get('/enrollments/{id}', [EnrollmentController::class, 'show']);
@@ -114,4 +118,16 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/conversations/{conversationId}/messages', [MessageController::class, 'store']);
     Route::post('/conversations/{conversationId}/read', [MessageController::class, 'markAsRead']);
     Route::delete('/conversations/{conversationId}/messages/{messageId}', [MessageController::class, 'destroy']);
+    Route::get('/my-enrolled-courses', [CourseController::class, 'myEnrolledCourses'])->middleware('can:student-access');
+});
+
+// ------------------------------------------------------------------
+// API cho Reviews
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/reviews', [ReviewController::class, 'index']);
+    Route::post('/reviews', [ReviewController::class, 'store'])->middleware('can:student-access');
+    Route::get('/reviews/{id}', [ReviewController::class, 'show']);
+    Route::put('/reviews/{id}', [ReviewController::class, 'update'])->middleware('can:student-access');
+    Route::delete('/reviews/{id}', [ReviewController::class, 'destroy'])->middleware('can:student-access');
+    Route::get('/reviews/course/{courseId}', [ReviewController::class, 'getByCourse']);
 });
