@@ -4,12 +4,17 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Support\Str;
 
 class Review extends Model
 {
     use HasFactory;
 
+    protected $keyType = 'string';
+    public $incrementing = false;
+
     protected $fillable = [
+        'id',
         'enrollment_id',
         'rating',
         'comment',
@@ -19,6 +24,16 @@ class Review extends Model
     protected $casts = [
         'rating' => 'decimal:1',
     ];
+
+    // Add this boot method to auto-generate UUID
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($model) {
+            $model->id = (string) Str::uuid();
+        });
+    }
 
     public function enrollment()
     {
