@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use App\Services\AuthService;
-use App\DTO\UserDTO;
+use App\DTO\GetUserDTO;
 
 class AuthController extends Controller
 {
@@ -34,7 +34,7 @@ class AuthController extends Controller
         ]);
 
         $token = $this->authService->generateAuthToken($user);
-        $userDTO = UserDTO::fromUser($user, ['id', 'name', 'email', 'roles']);
+        $userDTO = GetUserDTO::fromUser($user, ['id', 'name', 'email', 'roles']);
 
         return response()->json([
             'message' => 'User registered and logged in successfully',
@@ -60,7 +60,7 @@ class AuthController extends Controller
 
         $user = Auth::user();
         $token = $this->authService->generateAuthToken($user);
-        $userDTO = UserDTO::fromUser($user, ['id', 'name', 'email', 'roles']);
+        $userDTO = GetUserDTO::fromUser($user, ['id', 'name', 'email', 'roles']);
 
         return response()->json([
             'message' => 'User logged in successfully',
@@ -97,7 +97,7 @@ class AuthController extends Controller
             return response()->json(['error' => 'Không tìm thấy người dùng'], 401);
         }
 
-        $userDTO = UserDTO::fromUser($user, ['id', 'name', 'email', 'roles']);
+        $userDTO = GetUserDTO::fromUser($user, ['id', 'name', 'email', 'roles']);
 
         return response()->json($userDTO->toArray());
     }

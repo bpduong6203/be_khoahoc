@@ -63,14 +63,11 @@ Route::get('/auth/{provider}/callback', [GoogleController::class, 'handleProvide
 // lấy thông tin người dùng
 Route::middleware('auth:sanctum')->get('/user', [AuthController::class, 'getUser']);
 
-//Thanh toán QR đang thử nghiệm
-Route::get('/generate-qr', [PaymentController::class, 'generateQRCode']);
-
-
 // ------------------------------------------------------------------
 // API cho Categories
+Route::get('/categories', [CategoryController::class, 'index']);
+
 Route::middleware('auth:sanctum')->group(function () {
-    Route::get('/categories', [CategoryController::class, 'index'])->middleware('can:admin-access');
     Route::post('/categories', [CategoryController::class, 'store'])->middleware('can:admin-access');
     Route::get('/categories/{id}', [CategoryController::class, 'show']);
     Route::put('/categories/{id}', [CategoryController::class, 'update'])->middleware('can:admin-access');
@@ -79,17 +76,20 @@ Route::middleware('auth:sanctum')->group(function () {
 
 // ------------------------------------------------------------------
 
+// API cho Courses
+Route::get('/courses', [CourseController::class, 'index']);
+Route::get('/courses/{courseId}', [CourseController::class, 'show']);
+
+Route::get('/enrollments', [EnrollmentController::class, 'index']);
+Route::get('/enrollments/{id}', [EnrollmentController::class, 'show']);
+
 Route::middleware('auth:sanctum')->group(function () {
-    // API cho Courses
-    Route::get('/courses', [CourseController::class, 'index']);
     Route::post('/courses', [CourseController::class, 'store'])->middleware('can:teacher-or-admin');
     Route::get('/courses/{courseId}', [CourseController::class, 'show']);
     Route::put('/courses/{courseId}', [CourseController::class, 'update'])->middleware('can:update-course,courseId');
     Route::delete('/courses/{courseId}', [CourseController::class, 'destroy'])->middleware('can:delete-course,courseId');
     Route::get('/my-courses', [CourseController::class, 'myCourses'])->middleware('can:teacher-or-admin');
-    Route::get('/enrollments', [EnrollmentController::class, 'index']);
     Route::post('/courses/{courseId}/enroll', [EnrollmentController::class, 'store']);
-    Route::get('/enrollments/{id}', [EnrollmentController::class, 'show']);
     Route::post('/enrollments/{id}/cancel', [EnrollmentController::class, 'cancel']);
     Route::post('/enrollments/{id}/payment', [EnrollmentController::class, 'updatePayment'])->middleware('can:admin-access');
     Route::get('/my-enrolled-courses', [EnrollmentController::class, 'index']);
@@ -123,7 +123,7 @@ Route::middleware('auth:sanctum')->group(function () {
 });
 
 // ------------------------------------------------------------------
-// API cho Reviews
+
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/reviews', [ReviewController::class, 'index']);
     Route::post('/reviews', [ReviewController::class, 'store'])->middleware('can:student-access');
@@ -138,4 +138,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/lessons/{id}', [LessonController::class, 'show'])->middleware('can:teacher-or-admin');
     Route::put('/lessons/{id}', [LessonController::class, 'update'])->middleware('can:teacher-or-admin');
     Route::delete('/lessons/{id}', [LessonController::class, 'destroy'])->middleware('can:teacher-or-admin');
+});
+
+
+Route::prefix('payments')->middleware('auth:sanctum')->group(function () {
+    Route::post('/create', [PaymentController::class, 'createPayment']);
+    Route::put('/{paymentId}/status', [PaymentController::class, 'updatePaymentStatus']);
+    Route::get('/', [PaymentController::class, 'getAllPayments']);
 });
