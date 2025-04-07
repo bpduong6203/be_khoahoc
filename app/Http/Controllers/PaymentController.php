@@ -4,7 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Services\QRCodeService;
-use App\Models\Payment; // Thêm model Payment
+use App\Models\Payment;
+use App\Models\Enrollment; // Thêm model Enrollment
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
@@ -27,9 +28,12 @@ class PaymentController extends Controller
             // Validate request
             $request->validate([
                 'enrollment_id' => 'required|uuid|exists:enrollments,id',
-                'payment_method' => 'required|in:Momo,Bank,Paypal,Cash',
-                'amount' => 'required|numeric|min:0'
+                'payment_method' => 'required|in:Bank', // Chỉ hỗ trợ Bank như trong code gốc
             ]);
+
+            // Lấy enrollment để lấy giá trị price
+            $enrollment = Enrollment::findOrFail($request->enrollment_id);
+            $amount = $enrollment->price; // Tự động lấy price từ enrollment
 
             // Tạo invoice_code theo định dạng HD-<ngày tháng năm>-<số tăng dần>
             $date = Carbon::now()->format('dmY');
@@ -41,13 +45,13 @@ class PaymentController extends Controller
             $invoiceCode = sprintf("HD-%s-%04d", $date, $sequence);
 
             // Tạo bản ghi payment trong database
-            $payment = DB::transaction(function () use ($request, $invoiceCode) {
+            $payment = DB::transaction(function () use ($request, $invoiceCode, $amount) {
                 return Payment::create([
                     'id' => Str::uuid(),
                     'invoice_code' => $invoiceCode,
                     'enrollment_id' => $request->enrollment_id,
                     'user_id' => $request->user()->id,
-                    'amount' => $request->amount,
+                    'amount' => $amount, // Sử dụng price từ enrollment
                     'payment_method' => $request->payment_method,
                     'status' => 'Pending',
                     'billing_info' => $request->billing_info ? json_encode($request->billing_info) : null,
@@ -58,7 +62,7 @@ class PaymentController extends Controller
             if ($request->payment_method === 'Bank') {
                 $hoaDon = [
                     'invoice_code' => $invoiceCode,
-                    'total_amount' => $request->amount,
+                    'total_amount' => $amount, // Dùng amount từ enrollment
                 ];
 
                 $bank = [
@@ -133,5 +137,4 @@ class PaymentController extends Controller
             ], 500);
         }
     }
-
 }

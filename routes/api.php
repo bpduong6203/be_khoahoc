@@ -63,10 +63,6 @@ Route::get('/auth/{provider}/callback', [GoogleController::class, 'handleProvide
 // lấy thông tin người dùng
 Route::middleware('auth:sanctum')->get('/user', [AuthController::class, 'getUser']);
 
-//Thanh toán QR đang thử nghiệm
-Route::get('/generate-qr', [PaymentController::class, 'generateQRCode']);
-
-
 // ------------------------------------------------------------------
 // API cho Categories
 Route::get('/categories', [CategoryController::class, 'index']);
@@ -82,6 +78,10 @@ Route::middleware('auth:sanctum')->group(function () {
 
 // API cho Courses
 Route::get('/courses', [CourseController::class, 'index']);
+Route::get('/courses/{courseId}', [CourseController::class, 'show']);
+
+Route::get('/enrollments', [EnrollmentController::class, 'index']);
+Route::get('/enrollments/{id}', [EnrollmentController::class, 'show']);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/courses', [CourseController::class, 'store'])->middleware('can:teacher-or-admin');
@@ -89,9 +89,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/courses/{courseId}', [CourseController::class, 'update'])->middleware('can:update-course,courseId');
     Route::delete('/courses/{courseId}', [CourseController::class, 'destroy'])->middleware('can:delete-course,courseId');
     Route::get('/my-courses', [CourseController::class, 'myCourses'])->middleware('can:teacher-or-admin');
-    Route::get('/enrollments', [EnrollmentController::class, 'index']);
     Route::post('/courses/{courseId}/enroll', [EnrollmentController::class, 'store']);
-    Route::get('/enrollments/{id}', [EnrollmentController::class, 'show']);
     Route::post('/enrollments/{id}/cancel', [EnrollmentController::class, 'cancel']);
     Route::post('/enrollments/{id}/payment', [EnrollmentController::class, 'updatePayment'])->middleware('can:admin-access');
     Route::get('/my-enrolled-courses', [EnrollmentController::class, 'index']);
