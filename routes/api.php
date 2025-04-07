@@ -72,7 +72,7 @@ Route::get('/categories', [CategoryController::class, 'index']);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/categories', [CategoryController::class, 'store'])->middleware('can:admin-access');
-    Route::get('/categories/{id}', [CategoryController::class, 'show']); 
+    Route::get('/categories/{id}', [CategoryController::class, 'show']);
     Route::put('/categories/{id}', [CategoryController::class, 'update'])->middleware('can:admin-access');
     Route::delete('/categories/{id}', [CategoryController::class, 'destroy'])->middleware('can:admin-access');
 });
@@ -114,7 +114,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/conversations/{id}/members', [ConversationController::class, 'addMember']);
     Route::post('/conversations/{id}/leave', [ConversationController::class, 'leaveConversation']);
     Route::post('/courses/{courseId}/chat-with-teacher', [ConversationController::class, 'createTeacherConversation']);
-    
+
     // Messages
     Route::get('/conversations/{conversationId}/messages', [MessageController::class, 'index']);
     Route::post('/conversations/{conversationId}/messages', [MessageController::class, 'store']);
