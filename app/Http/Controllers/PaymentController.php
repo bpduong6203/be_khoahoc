@@ -137,4 +137,33 @@ class PaymentController extends Controller
             ], 500);
         }
     }
+    /**
+     * Lấy tất cả payments
+     */
+    public function getAllPayments(Request $request)
+    {
+        try {
+            $perPage = $request->query('per_page', 10);
+            $page = $request->query('page', 1);
+
+            $payments = Payment::with(['enrollment', 'user'])
+                ->orderBy('created_at', 'desc') 
+                ->paginate($perPage, ['*'], 'page', $page);
+
+            return response()->json([
+                'data' => $payments->items(),
+                'current_page' => $payments->currentPage(),
+                'total_pages' => $payments->lastPage(),
+                'total_items' => $payments->total(),
+                'per_page' => $payments->perPage(),
+                'message' => 'Payments retrieved successfully'
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Failed to retrieve payments',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
 }

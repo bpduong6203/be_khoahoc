@@ -144,4 +144,5 @@ Route::middleware('auth:sanctum')->group(function () {
 Route::prefix('payments')->middleware('auth:sanctum')->group(function () {
     Route::post('/create', [PaymentController::class, 'createPayment']);
     Route::put('/{paymentId}/status', [PaymentController::class, 'updatePaymentStatus']);
+    Route::get('/', [PaymentController::class, 'getAllPayments']);
 });
