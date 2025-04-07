@@ -28,5 +28,5 @@ routes/api
 
 
 còn lại mn tìm hỉu chat GPT nhé :)))
-
+  này của DUY: php -S 127.0.0.1:8000 -t public
 
