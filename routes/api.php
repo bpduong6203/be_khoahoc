@@ -14,6 +14,7 @@ use App\Http\Controllers\ConversationController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\EnrollmentController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\LessonController;
 
 // =============    LƯU Ý KHI TẠO API!!!!! ==========================
 // Mình sẽ kiểm soát quyền truy cập ở đay thay vì controller nhé 
@@ -131,7 +132,14 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/reviews/{id}', [ReviewController::class, 'show']);
     Route::put('/reviews/{id}', [ReviewController::class, 'update'])->middleware('can:student-access');
     Route::delete('/reviews/{id}', [ReviewController::class, 'destroy'])->middleware('can:student-access');
-    Route::get('/reviews/course/{courseId}', [ReviewController::class, 'getByCourse']);
+});
+// API cho Lesson
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/lessons', [LessonController::class, 'index'])->middleware('can:teacher-or-admin');
+    Route::post('/lessons', [LessonController::class, 'store'])->middleware('can:teacher-or-admin');
+    Route::get('/lessons/{id}', [LessonController::class, 'show'])->middleware('can:teacher-or-admin');
+    Route::put('/lessons/{id}', [LessonController::class, 'update'])->middleware('can:teacher-or-admin');
+    Route::delete('/lessons/{id}', [LessonController::class, 'destroy'])->middleware('can:teacher-or-admin');
 });
 
 
