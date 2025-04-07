@@ -131,11 +131,14 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/reviews/{id}', [ReviewController::class, 'update'])->middleware('can:student-access');
     Route::delete('/reviews/{id}', [ReviewController::class, 'destroy'])->middleware('can:student-access');
 });
+
+
 // API cho Lesson
+Route::get('/lessons', [LessonController::class, 'index']);
+Route::get('/lessons/{id}', [LessonController::class, 'show']);
+
 Route::middleware('auth:sanctum')->group(function () {
-    Route::get('/lessons', [LessonController::class, 'index'])->middleware('can:teacher-or-admin');
-    Route::post('/lessons', [LessonController::class, 'store'])->middleware('can:teacher-or-admin');
-    Route::get('/lessons/{id}', [LessonController::class, 'show'])->middleware('can:teacher-or-admin');
+    Route::post('/lessons', [LessonController::class, 'store'])->middleware('can:admin-access');
     Route::put('/lessons/{id}', [LessonController::class, 'update'])->middleware('can:teacher-or-admin');
     Route::delete('/lessons/{id}', [LessonController::class, 'destroy'])->middleware('can:teacher-or-admin');
 });

@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Services\QRCodeService;
 use App\Models\Payment;
-use App\Models\Enrollment; // Thêm model Enrollment
+use App\Models\Enrollment;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
