@@ -28,7 +28,7 @@ class QRCodeService
 
         return $maDau . $bank['ma_dinh_danh'] . $dinhDanh . $bank['bank_id'] .
             $bank['recipient_account_number'] . $xacThuc . sprintf("%02d", $amountLength) .
-            $amount . "5802VN62" . "180814" . $maHoaDon . "6304";
+            $amount . "5802VN62" . "200816" . $maHoaDon . "6304";
     }
 
     private function calculateCRC($data)

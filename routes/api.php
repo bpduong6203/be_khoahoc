@@ -133,3 +133,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/reviews/{id}', [ReviewController::class, 'destroy'])->middleware('can:student-access');
     Route::get('/reviews/course/{courseId}', [ReviewController::class, 'getByCourse']);
 });
+
+
+Route::prefix('payments')->middleware('auth:sanctum')->group(function () {
+    Route::post('/create', [PaymentController::class, 'createPayment']);
+    Route::put('/{paymentId}/status', [PaymentController::class, 'updatePaymentStatus']);
+});
