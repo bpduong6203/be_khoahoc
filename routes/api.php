@@ -15,6 +15,7 @@ use App\Http\Controllers\MessageController;
 use App\Http\Controllers\EnrollmentController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\LessonController;
+use App\Http\Controllers\MaterialController;
 
 // =============    LƯU Ý KHI TẠO API!!!!! ==========================
 // Mình sẽ kiểm soát quyền truy cập ở đay thay vì controller nhé 
@@ -146,4 +147,15 @@ Route::middleware('auth:sanctum')->group(function () {
 Route::prefix('payments')->middleware('auth:sanctum')->group(function () {
     Route::post('/create', [PaymentController::class, 'createPayment']);
     Route::put('/{paymentId}/status', [PaymentController::class, 'updatePaymentStatus']);
+});
+
+//materials
+Route::middleware('auth:sanctum')->group(function () {
+    // Material routes
+    Route::get('materials/lesson/{lessonId}', [MaterialController::class, 'index']);
+    Route::post('materials', [MaterialController::class, 'store']);
+    Route::get('materials/{id}', [MaterialController::class, 'show']);
+    Route::post('materials/{id}', [MaterialController::class, 'update']);
+    Route::delete('materials/{id}', [MaterialController::class, 'destroy']);
+
 });
