@@ -4,8 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Services\CategoryService;
+use App\DTO\CategoryWithCoursesDTO;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
-
 
 class CategoryController extends Controller
 {
@@ -84,6 +84,27 @@ class CategoryController extends Controller
             return response()->json(['message' => 'Category deleted successfully']);
         } catch (ModelNotFoundException $e) {
             return response()->json(['message' => 'Category not found'], 404);
+        }
+    }
+
+    public function showCourses()
+    {
+        try {
+            $categories = $this->categoryService->getCategoryWithCourses();
+
+            $dtos = $categories->map(function ($category) {
+                return CategoryWithCoursesDTO::fromModel($category);
+            })->toArray();
+
+            return response()->json([
+                'data' => array_map(fn($dto) => $dto->toArray(), $dtos),
+                'message' => 'All categories with courses retrieved successfully'
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Failed to retrieve categories with courses',
+                'error' => $e->getMessage()
+            ], 500);
         }
     }
 }

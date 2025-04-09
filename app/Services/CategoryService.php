@@ -55,4 +55,12 @@ class CategoryService
         $category = Category::findOrFail($id);
         $category->delete();
     }
+
+    public function getCategoryWithCourses()
+    {
+        return Category::with('courses.user')
+            ->withCount('courses')
+            ->orderBy('courses_count', 'desc') 
+            ->get();
+    }
 }
