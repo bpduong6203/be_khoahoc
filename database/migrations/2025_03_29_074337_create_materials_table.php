@@ -17,7 +17,7 @@ return new class extends Migration
             $table->foreign('lesson_id')->references('id')->on('lessons')->onDelete('cascade');
             $table->string('title');
             $table->string('file_url');
-            $table->string('file_type', 50)->nullable();
+            $table->string('file_type', 255)->nullable();
             $table->integer('file_size')->nullable()->comment('Size in KB');
             $table->text('description')->nullable();
             $table->timestamps();
