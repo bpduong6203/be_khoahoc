@@ -1,6 +1,6 @@
 <?php
 
-namespace App\DTO; // Namespace bạn đang dùng
+namespace App\DTO;
 
 class CategoryWithCoursesDTO
 {
@@ -44,7 +44,7 @@ class CategoryWithCoursesDTO
                 $course->title,
                 $course->description,
                 $course->category_id,
-                $course->user->name ?? 'Unknown', // Lấy name từ user, mặc định 'Unknown' nếu không có
+                $course->user->name ?? 'Unknown', 
                 (float) $course->price,
                 $course->discount_price ? (float) $course->discount_price : null,
                 $course->thumbnail_url,
@@ -90,7 +90,7 @@ class CourseDTO
     public string $title;
     public ?string $description;
     public ?string $categoryId;
-    public string $userName; // Thay userId thành userName
+    public string $userName; 
     public float $price;
     public ?float $discountPrice;
     public ?string $thumbnailUrl;
@@ -109,7 +109,7 @@ class CourseDTO
         string $title,
         ?string $description,
         ?string $categoryId,
-        string $userName, // Thay userId thành userName
+        string $userName,
         float $price,
         ?float $discountPrice,
         ?string $thumbnailUrl,
@@ -149,7 +149,7 @@ class CourseDTO
             'title' => $this->title,
             'description' => $this->description,
             'category_id' => $this->categoryId,
-            'user_name' => $this->userName, // Thay user_id thành user_name
+            'user_name' => $this->userName, 
             'price' => $this->price,
             'discount_price' => $this->discountPrice,
             'thumbnail_url' => $this->thumbnailUrl,

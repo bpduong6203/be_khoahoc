@@ -82,7 +82,6 @@ Route::get('/courses/{courseId}', [CourseController::class, 'show']);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/courses', [CourseController::class, 'store'])->middleware('can:teacher-or-admin');
-    Route::get('/courses/{courseId}', [CourseController::class, 'show']);
     Route::put('/courses/{courseId}', [CourseController::class, 'update'])->middleware('can:update-course,courseId');
     Route::delete('/courses/{courseId}', [CourseController::class, 'destroy'])->middleware('can:delete-course,courseId');
     Route::get('/my-courses', [CourseController::class, 'myCourses'])->middleware('can:teacher-or-admin');
@@ -152,6 +151,7 @@ Route::middleware('auth:sanctum')->group(function () {
 Route::prefix('payments')->middleware('auth:sanctum')->group(function () {
     Route::post('/create', [PaymentController::class, 'createPayment']);
     Route::put('/{paymentId}/status', [PaymentController::class, 'updatePaymentStatus']);
+    Route::get('/', [PaymentController::class, 'getAllPayments']);
 });
 
 //materials

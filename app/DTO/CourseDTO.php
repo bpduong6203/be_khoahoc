@@ -4,6 +4,7 @@ namespace App\DTO;
 use App\Models\Course;
 
 class CourseDTO {
+    public function __construct() {}
     public $id;
     public $title;
     public $description;
