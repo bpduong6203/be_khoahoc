@@ -16,6 +16,7 @@ use App\Http\Controllers\EnrollmentController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\LessonController;
 use App\Http\Controllers\MaterialController;
+use App\Http\Controllers\ProgressController;
 
 // =============    LƯU Ý KHI TẠO API!!!!! ==========================
 // Mình sẽ kiểm soát quyền truy cập ở đay thay vì controller nhé 
@@ -163,4 +164,24 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('materials/{id}', [MaterialController::class, 'update']);
     Route::delete('materials/{id}', [MaterialController::class, 'destroy']);
     Route::get('/', [PaymentController::class, 'getAllPayments']);
+});
+// API cho Progress (tiến độ học tập)
+Route::middleware('auth:sanctum')->group(function () {
+    // Xem tiến độ tất cả khóa học đã đăng ký
+    Route::get('/progress', [ProgressController::class, 'index'])->middleware('can:student-access');
+    
+    // Xem chi tiết tiến độ một khóa học
+    Route::get('/enrollments/{enrollmentId}/progress', [ProgressController::class, 'show']);
+    
+    // Cập nhật tiến độ bài học
+    Route::put('/enrollments/{enrollmentId}/lessons/{lessonId}/progress', 
+        [ProgressController::class, 'updateLessonProgress']);
+    
+    // Đánh dấu bài học đã bắt đầu
+    Route::post('/enrollments/{enrollmentId}/lessons/{lessonId}/start', 
+        [ProgressController::class, 'startLesson']);
+    
+    // Đánh dấu bài học đã hoàn thành
+    Route::post('/enrollments/{enrollmentId}/lessons/{lessonId}/complete', 
+        [ProgressController::class, 'completeLesson']);
 });
