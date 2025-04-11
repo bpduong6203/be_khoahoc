@@ -15,6 +15,7 @@ use App\Http\Controllers\MessageController;
 use App\Http\Controllers\EnrollmentController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\LessonController;
+use App\Http\Controllers\MaterialController;
 use App\Http\Controllers\ProgressController;
 
 // =============    LƯU Ý KHI TẠO API!!!!! ==========================
@@ -66,10 +67,11 @@ Route::middleware('auth:sanctum')->get('/user', [AuthController::class, 'getUser
 // ------------------------------------------------------------------
 // API cho Categories
 Route::get('/categories', [CategoryController::class, 'index']);
+Route::get('/categories-course', [CategoryController::class, 'showCourses']);
+Route::get('/categories/{id}', [CategoryController::class, 'show']);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/categories', [CategoryController::class, 'store'])->middleware('can:admin-access');
-    Route::get('/categories/{id}', [CategoryController::class, 'show']);
     Route::put('/categories/{id}', [CategoryController::class, 'update'])->middleware('can:admin-access');
     Route::delete('/categories/{id}', [CategoryController::class, 'destroy'])->middleware('can:admin-access');
 });
@@ -81,7 +83,6 @@ Route::get('/courses/{courseId}', [CourseController::class, 'show']);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/courses', [CourseController::class, 'store'])->middleware('can:teacher-or-admin');
-    Route::get('/courses/{courseId}', [CourseController::class, 'show']);
     Route::put('/courses/{courseId}', [CourseController::class, 'update'])->middleware('can:update-course,courseId');
     Route::delete('/courses/{courseId}', [CourseController::class, 'destroy'])->middleware('can:delete-course,courseId');
     Route::get('/my-courses', [CourseController::class, 'myCourses'])->middleware('can:teacher-or-admin');
@@ -139,7 +140,6 @@ Route::middleware('auth:sanctum')->group(function () {
 // API cho Lesson
 Route::get('/lessons', [LessonController::class, 'index']);
 Route::get('/lessons/{id}', [LessonController::class, 'show']);
-
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/lessons', [LessonController::class, 'store'])->middleware('can:admin-access');
     Route::put('/lessons/{id}', [LessonController::class, 'update'])->middleware('can:teacher-or-admin');
@@ -154,3 +154,27 @@ Route::prefix('payments')->middleware('auth:sanctum')->group(function () {
     Route::get('/', [PaymentController::class, 'getAllPayments']);
 });
 
+// ------------------------------------------------------------------
+//materials
+Route::middleware('auth:sanctum')->group(function () {
+    // Material routes
+    Route::get('materials/lesson/{lessonId}', [MaterialController::class, 'index']);
+    Route::post('materials', [MaterialController::class, 'store']);
+    Route::get('materials/{id}', [MaterialController::class, 'show']);
+    Route::post('materials/{id}', [MaterialController::class, 'update']);
+    Route::delete('materials/{id}', [MaterialController::class, 'destroy']);
+    Route::get('/', [PaymentController::class, 'getAllPayments']);
+});
+
+// ------------------------------------------------------------------
+// API cho Progress (tiến độ học tập)
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/progress', [ProgressController::class, 'index'])->middleware('can:student-access');
+    Route::get('/enrollments/{enrollmentId}/progress', [ProgressController::class, 'show']);
+    Route::put('/enrollments/{enrollmentId}/lessons/{lessonId}/progress', 
+        [ProgressController::class, 'updateLessonProgress']);
+    Route::post('/enrollments/{enrollmentId}/lessons/{lessonId}/start', 
+        [ProgressController::class, 'startLesson']);
+    Route::post('/enrollments/{enrollmentId}/lessons/{lessonId}/complete', 
+        [ProgressController::class, 'completeLesson']);
+});

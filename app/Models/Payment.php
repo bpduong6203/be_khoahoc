@@ -9,10 +9,14 @@ class Payment extends Model
 {
     use HasFactory;
 
+    protected $keyType = 'string';
+    public $incrementing = false;
+
     protected $fillable = [
         'id',
         'enrollment_id',
         'user_id',
+        'invoice_code',
         'amount',
         'payment_method',
         'transaction_id',

@@ -67,6 +67,11 @@ class Course extends Model
         return $this->hasMany(Conversation::class);
     }
 
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
     // public function recommendations()
     // {
     //     return $this->hasMany(AICourseRecommendation::class);
