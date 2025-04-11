@@ -140,7 +140,6 @@ Route::middleware('auth:sanctum')->group(function () {
 // API cho Lesson
 Route::get('/lessons', [LessonController::class, 'index']);
 Route::get('/lessons/{id}', [LessonController::class, 'show']);
-
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/lessons', [LessonController::class, 'store'])->middleware('can:admin-access');
     Route::put('/lessons/{id}', [LessonController::class, 'update'])->middleware('can:teacher-or-admin');
@@ -155,6 +154,7 @@ Route::prefix('payments')->middleware('auth:sanctum')->group(function () {
     Route::get('/', [PaymentController::class, 'getAllPayments']);
 });
 
+// ------------------------------------------------------------------
 //materials
 Route::middleware('auth:sanctum')->group(function () {
     // Material routes
@@ -165,23 +165,16 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('materials/{id}', [MaterialController::class, 'destroy']);
     Route::get('/', [PaymentController::class, 'getAllPayments']);
 });
+
+// ------------------------------------------------------------------
 // API cho Progress (tiến độ học tập)
 Route::middleware('auth:sanctum')->group(function () {
-    // Xem tiến độ tất cả khóa học đã đăng ký
     Route::get('/progress', [ProgressController::class, 'index'])->middleware('can:student-access');
-    
-    // Xem chi tiết tiến độ một khóa học
     Route::get('/enrollments/{enrollmentId}/progress', [ProgressController::class, 'show']);
-    
-    // Cập nhật tiến độ bài học
     Route::put('/enrollments/{enrollmentId}/lessons/{lessonId}/progress', 
         [ProgressController::class, 'updateLessonProgress']);
-    
-    // Đánh dấu bài học đã bắt đầu
     Route::post('/enrollments/{enrollmentId}/lessons/{lessonId}/start', 
         [ProgressController::class, 'startLesson']);
-    
-    // Đánh dấu bài học đã hoàn thành
     Route::post('/enrollments/{enrollmentId}/lessons/{lessonId}/complete', 
         [ProgressController::class, 'completeLesson']);
 });
