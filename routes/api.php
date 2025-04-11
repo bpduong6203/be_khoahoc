@@ -81,11 +81,11 @@ Route::middleware('auth:sanctum')->group(function () {
 
 // ------------------------------------------------------------------
 // API cho Reviews
-Route::middleware('auth:sanctum')->group(function () {
-    Route::get('/reviews', [ReviewController::class, 'index']);
-    Route::post('/reviews', [ReviewController::class, 'store'])->middleware('can:student-access');
-    Route::get('/reviews/{id}', [ReviewController::class, 'show']);
-    Route::put('/reviews/{id}', [ReviewController::class, 'update'])->middleware('can:student-access');
-    Route::delete('/reviews/{id}', [ReviewController::class, 'destroy'])->middleware('can:student-access');
-    Route::get('/reviews/course/{courseId}', [ReviewController::class, 'getByCourse']);
-});
+// Route::middleware('auth:sanctum')->group(function () {
+//     Route::get('/reviews', [ReviewController::class, 'index']);
+//     Route::post('/reviews', [ReviewController::class, 'store'])->middleware('can:student-access');
+//     Route::get('/reviews/{id}', [ReviewController::class, 'show']);
+//     Route::put('/reviews/{id}', [ReviewController::class, 'update'])->middleware('can:student-access');
+//     Route::delete('/reviews/{id}', [ReviewController::class, 'destroy'])->middleware('can:student-access');
+//     Route::get('/reviews/course/{courseId}', [ReviewController::class, 'getByCourse']);
+// });
