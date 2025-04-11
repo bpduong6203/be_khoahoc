@@ -11,6 +11,7 @@ class Course extends Model
 
     protected $keyType = 'string';
     public $incrementing = false;
+    public $timestamps = true;
 
     protected $fillable = [
         'id',
@@ -37,6 +38,13 @@ class Course extends Model
         'rating' => 'decimal:2',
     ];
 
+    protected $attributes = [
+        'status' => 'draft',
+        'rating' => 0.0,
+        'enrollment_count' => 0,
+    ];
+
+    // Relationships
     public function category()
     {
         return $this->belongsTo(Category::class);
@@ -67,8 +75,15 @@ class Course extends Model
         return $this->hasMany(Conversation::class);
     }
 
-    // public function recommendations()
-    // {
-    //     return $this->hasMany(AICourseRecommendation::class);
-    // }
+    // Custom accessors
+    public function getFormattedPriceAttribute()
+    {
+        return number_format($this->price, 0, ',', '.') . ' đ';
+    }
+
+    // Custom scopes
+    public function scopeSearch($query, $keyword)
+    {
+        return $query->where('title', 'LIKE', "%$keyword%");
+    }
 }
